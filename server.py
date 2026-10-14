@@ -28,5 +28,105 @@ class LibraryServer:
             "B110":{"id": "B110", "title": "Coding For Dummies, 1st edition", "author": "Nikhil Abraham", "avaliable": True, "borrower_id": None},
         }
 
-        def get_all_books(self):
-            
+    def get_all_books(self):
+        """Procedure 1:Return imformation about every book stored in the library."""
+        with self.lock:
+            return [dict(book) for book in self.inventory.values()]
+
+    def search_book(self, keyword):
+        """Procedure 2: Search for books by title or author."""
+        with self.lock:
+            result = []
+            for book in self.inventory.values():
+                if keyword.lower() in book["title"].lower() or keyword.lower() in book["author"].lower():
+                    result.append(dict(book))
+            return result
+
+    def check_availability(self, book_id):
+        """Procedure 3: Check if a specific book is available for borrowing."""
+        if not book_id:
+            return {"error": "Book ID is required."}
+
+        b_id = book_id.strip().upper()
+        with self.lock:
+            if b_id not in self.inventory:
+                return {"error": f"Book with ID {b_id} not found."}
+
+            book = self.inventory[b_id]
+            return {
+                "success": True, 
+                "book_id": book["id"], 
+                "title": book["title"], 
+                "author": book["author"], 
+                "available": book["avaliable"],
+                "borrower_id": book["borrower_id"]
+                }
+
+    def borrow_book(self, student_id, book_id, borrower_id):
+        """Procedure 4: Borrow a book if it is available."""
+        if not student_id or not book_id or not borrower_id:
+            return {"error": "Student ID, Book ID, and Borrower ID are required."}
+
+        s_id = student_id.strip().upper()
+        b_id = book_id.strip().upper()
+        br_id = borrower_id.strip().upper()
+
+        with self.lock:
+            if b_id not in self.inventory:
+                return {"error": f"Book with ID {b_id} not found."}
+
+            book = self.inventory[b_id]
+            if not book["avaliable"]:
+                return {"error": f"Book '{book['title']}' is currently borrowed by another user."}
+
+            # Mark the book as borrowed
+            book["avaliable"] = False
+            book["borrower_id"] = br_id
+            return {
+                "success": True,
+                "message": f"Book '{book['title']}' has been successfully borrowed by Student ID {s_id}.",
+                "book_id": book["id"],
+                "borrower_id": br_id
+            }
+    def return_book(self, student_id, book_id, borrower_id):
+        """Procedure 5: Return a borrowed book."""
+        if not student_id or not book_id or not borrower_id:
+            return {"error": "Student ID, Book ID, and Borrower ID are required."}
+
+        s_id = student_id.strip().upper()
+        b_id = book_id.strip().upper()
+        br_id = borrower_id.strip().upper()
+
+        with self.lock:
+            if b_id not in self.inventory:
+                return {"error": f"Book with ID {b_id} not found."}
+
+            book = self.inventory[b_id]
+            if book["avaliable"]:
+                return {"error": f"Book '{book['title']}' is not currently borrowed."}
+            if book["borrower_id"] != br_id:
+                return {"error": f"Book '{book['title']}' was not borrowed by Borrower ID {br_id}."}
+
+            # Mark the book as returned
+            book["avaliable"] = True
+            book["borrower_id"] = None
+            return {
+                "success": True,
+                "message": f"Book '{book['title']}' has been successfully returned by Student ID {s_id}.",
+                "book_id": book["id"],
+                "borrower_id": book["borrower_id"]
+            }
+
+    def run_server(host="localhost", port=8000):
+        server = ThreadedXMLRPCServer((host, port), allow_none=True)
+        server.register_instance(LibraryServer())
+        print(f"[*] Library RPC Server is starting on {host}:{port}...")
+        print(f"[*] Press Ctrl+C to stop the server.")
+        try:
+            server.serve_forever()
+        except KeyboardInterrupt:
+            print("Shutting down the server...")
+            server.server_close()
+
+    if __name__ == "__main__":
+        run_server()
