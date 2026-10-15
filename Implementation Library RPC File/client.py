@@ -87,18 +87,29 @@ def main():
                 book_id = input("Enter the book ID to return: ").strip()
                 borrower_id = input("Enter your borrower ID: ").strip()
                 try:
-                success = proxy.return_book(book_id, borrower_id)
-                if success:
-                    print(f"Successfully returned book ID {book_id}.")
-                else:
-                    print(f"Failed to return book ID {book_id}. Check if you have borrowed it.")
-            except (socket.error, xmlrpc.client.Fault) as e:
-                print(f"Error: {e}")
+                    success = proxy.return_book(book_id, borrower_id)
+                    if success:
+                        print(f"Successfully returned book ID {book_id}.")
+                    else:
+                        print(f"Failed to return book ID {book_id}. Check if you have borrowed it.")
+                except (socket.error, xmlrpc.client.Fault) as e:
+                    print(f"Error: {e}")
 
-        elif choice == "6":
-            borrower_id = input("Enter your borrower ID to view borrowed books: ")
-            try:
+            elif choice == "6":
+                borrower_id = input("Enter your borrower ID to view borrowed books: ").strip()
                 books = proxy.view_borrowed_books(borrower_id)
                 format_books_table(books)
-            except (socket.error,
+
+            elif choice == "7":
+                print("Goodbye!")
+                break
+
+            else:
+                print("Invalid choice. Please enter a number from 1 to 7.")
+        except (socket.error, xmlrpc.client.Fault) as e:
+            print(f"Error: {e}")
+
+
+if __name__ == "__main__":
+    main()
     
