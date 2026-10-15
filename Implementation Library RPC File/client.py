@@ -44,45 +44,49 @@ def main():
         try:
             if choice == "1":
                 books = proxy.list_books()
+                print("\nList of Books:")
                 format_books_table(books)
-            except (socket.error, xmlrpc.client.Fault) as e:
-                print(f"Error: {e}")
 
-        elif choice == "2":
-            search_term = input("Enter title or author to search: ").strip()
-            try:
-                books = proxy.search_books(search_term)
-                format_books_table(books)
-            except (socket.error, xmlrpc.client.Fault) as e:
-                print(f"Error: {e}")
-
-        elif choice == "3":
-            book_id = input("Enter the book ID to check availability: ").strip()
-            try:
-                available = proxy.check_availability(book_id)
-                if available:
-                    print(f"Book ID {book_id} is available.")
+            elif choice == "2":
+                keywords = input("Enter keywords to search for books (title, author, or ID): ").strip()
+                if not keywords:
+                    print("No keywords entered. Please try again.")
+                    continue
+                results = proxy.search_books(keywords)
+                print(f"\nSearch Results for '{keywords}':")
+                format_books_table(results)
+                
+            elif choice == "3":
+                book_id = input("Enter the book ID to check availability: ").strip()
+                if not book_id:
+                    print("No book ID entered. Please try again.")
+                    continue
+                results = proxy.search_books(book_id)
+                if not results["success"]:
+                    print(f"Book ID {book_id} not found.")
                 else:
-                    print(f"Book ID {book_id} is currently borrowed.")
-            except (socket.error, xmlrpc.client.Fault) as e:
-                print(f"Error: {e}")
-
-        elif choice == "4":
-            book_id = input("Enter the book ID to borrow: ")
-            borrower_id = input("Enter your borrower ID: ")
-            try:
-                success = proxy.borrow_book(book_id, borrower_id)
-                if success:
-                    print(f"Successfully borrowed book ID {book_id}.")
+                    status = "Available" if results["available"] else f"Unavailable (Borrowed by {results['borrower_id']})"
+                    print(f"[+] Book ID: {results['book_id']}")
+                    print(f"[+] Title: {results['title']}")
+                    print(f"[+] Author: {results['author']}")
+                    print(f"[+] Status: {status}")
+            
+            elif choice == "4":
+                student_id = input("Enter your student ID: ").strip()
+                book_id = input("Enter the book ID to borrow: ").strip()
+                if not student_id or not book_id:
+                    print("Student ID and Book ID are required. Please try again.")
+                    continue
+                results = proxy.search_books(book_id)
+                if not results["success"]:
+                    print(f"[+] {results['message']}")
                 else:
-                    print(f"Failed to borrow book ID {book_id}. It may not be available.")
-            except (socket.error, xmlrpc.client.Fault) as e:
-                print(f"Error: {e}")
+                    print(f"[-] {results['message']}")
 
-        elif choice == "5":
-            book_id = input("Enter the book ID to return: ")
-            borrower_id = input("Enter your borrower ID: ")
-            try:
+            elif choice == "5":
+                book_id = input("Enter the book ID to return: ").strip()
+                borrower_id = input("Enter your borrower ID: ").strip()
+                try:
                 success = proxy.return_book(book_id, borrower_id)
                 if success:
                     print(f"Successfully returned book ID {book_id}.")
