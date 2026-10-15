@@ -84,30 +84,40 @@ def main():
                     print(f"[-] {results['message']}")
 
             elif choice == "5":
+                student_id = input("Enter your student ID: ").strip()
                 book_id = input("Enter the book ID to return: ").strip()
-                borrower_id = input("Enter your borrower ID: ").strip()
-                try:
-                    success = proxy.return_book(book_id, borrower_id)
-                    if success:
-                        print(f"Successfully returned book ID {book_id}.")
-                    else:
-                        print(f"Failed to return book ID {book_id}. Check if you have borrowed it.")
-                except (socket.error, xmlrpc.client.Fault) as e:
-                    print(f"Error: {e}")
+                if not student_id or not book_id:
+                    print("Student ID and Book ID are required. Please try again.")
+                    continue
+                results = proxy.search_books(student_id, book_id)
+                if not results["success"]:
+                    print(f"[+] {results['message']}")
+                else:
+                    print(f"[-] {results['message']}")
 
             elif choice == "6":
-                borrower_id = input("Enter your borrower ID to view borrowed books: ").strip()
-                books = proxy.view_borrowed_books(borrower_id)
+                student_id = input("Enter your student ID to view borrowed books: ").strip()
+                if not student_id:
+                    print("Student ID is required. Please try again.")
+                    continue
+                books = proxy.view_borrowed_books(student_id)
+                print(f"\nBorrowed Books for Student ID {student_id}:")
                 format_books_table(books)
 
             elif choice == "7":
-                print("Goodbye!")
+                print("Exiting the Library Management Client. Goodbye!")
                 break
 
             else:
-                print("Invalid choice. Please enter a number from 1 to 7.")
+                print("Invalid choice. Please enter a number between 1 and 7.") 
+
         except (socket.error, xmlrpc.client.Fault) as e:
-            print(f"Error: {e}")
+            print(f"Error communicating with the server: {e}")
+            print("Please ensure the server is running and try again.")
+        except xmlrpc.client.Fault as fault:
+            print(f"XML-RPC Fault: {fault.faultString}")
+        except Exception as e:
+            print(f"An unexpected error occurred: {e}")
 
 
 if __name__ == "__main__":
