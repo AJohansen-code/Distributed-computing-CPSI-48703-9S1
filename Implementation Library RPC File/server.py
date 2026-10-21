@@ -3,9 +3,9 @@ Central RPC Server for Distributed Library Management System
 Framework: Python xmlrpc.server (XML-RPC over HTTP) 
 """
 
+import threading
 from xmlrpc.server import SimpleXMLRPCServer
 from socketserver import ThreadingMixIn
-import threading
 
 class ThreadedXMLRPCServer(ThreadingMixIn, SimpleXMLRPCServer):
     daemon_threads = True
@@ -37,20 +37,21 @@ class LibraryServer:
         """Procedure 2: Search for books by title or author."""
         with self.lock:
             result = []
+            kw = keyword.lower()
             for book in self.inventory.values():
-                if keyword.lower() in book["title"].lower() or keyword.lower() in book["author"].lower():
+                if kw.lower() in book["title"].lower() or kw.lower() in book["author"].lower() or kw in book["id"].lower():
                     result.append(dict(book))
             return result
 
     def check_availability(self, book_id):
         """Procedure 3: Check if a specific book is available for borrowing."""
         if not book_id:
-            return {"error": "Book ID is required."}
+            return {"success": False, "error": "Book ID is required."}
 
         b_id = book_id.strip().upper()
         with self.lock:
             if b_id not in self.inventory:
-                return {"error": f"Book with ID {b_id} not found."}
+                return {"success": False, "error": f"Book with ID {b_id} not found."}
 
             book = self.inventory[b_id]
             return {
@@ -62,31 +63,30 @@ class LibraryServer:
                 "borrower_id": book["borrower_id"]
                 }
 
-    def borrow_book(self, student_id, book_id, borrower_id):
+    def borrow_book(self, student_id, book_id):
         """Procedure 4: Borrow a book if it is available."""
-        if not student_id or not book_id or not borrower_id:
-            return {"error": "Student ID, Book ID, and Borrower ID are required."}
+        if not student_id or not book_id:
+            return {"success": False, "message": "Student ID and Book ID are required."}
 
         s_id = student_id.strip().upper()
         b_id = book_id.strip().upper()
-        br_id = borrower_id.strip().upper()
 
         with self.lock:
             if b_id not in self.inventory:
-                return {"error": f"Book with ID {b_id} not found."}
+                return {"success": False, "message": f"Book with ID {b_id} not found."}
 
             book = self.inventory[b_id]
             if not book["avaliable"]:
-                return {"error": f"Book '{book['title']}' is currently borrowed by another user."}
+                return {"success": False, "message": f"Book '{book['title']}' is currently borrowed by another user."}
 
             # Mark the book as borrowed
             book["avaliable"] = False
-            book["borrower_id"] = br_id
+            book["borrower_id"] = s_id
             return {
                 "success": True,
                 "message": f"Book '{book['title']}' has been successfully borrowed by Student ID {s_id}.",
                 "book_id": book["id"],
-                "borrower_id": br_id
+                "borrower_id": s_id
             }
     def return_book(self, student_id, book_id, borrower_id):
         """Procedure 5: Return a borrowed book."""
