@@ -53,23 +53,23 @@ def main():
                 if not keywords:
                     print("No keywords entered. Please try again.")
                     continue
-                results = proxy.search_books(keywords)
+                result = proxy.search_books(keywords)
                 print(f"\nSearch Results for '{keywords}':")
-                format_books_table(results)
+                format_books_table(result)
                 
             elif choice == "3":
                 book_id = input("Enter the book ID to check availability: ").strip()
                 if not book_id:
                     print("No book ID entered. Please try again.")
                     continue
-                results = proxy.search_books(book_id)
-                if not results["success"]:
-                    print(f"Book ID {book_id} not found.")
+                result = proxy.check_availability(book_id)
+                if not result.get("success"):
+                    print(f"[-] {result.get('error')}")
                 else:
-                    status = "Available" if results["available"] else f"Unavailable (Borrowed by {results['borrower_id']})"
-                    print(f"[+] Book ID: {results['book_id']}")
-                    print(f"[+] Title: {results['title']}")
-                    print(f"[+] Author: {results['author']}")
+                    status = "Available" if result["available"] else f"Unavailable (Borrowed by {results['borrower_id']})"
+                    print(f"[+] Book ID: {result['book_id']}")
+                    print(f"[+] Title: {result['title']}")
+                    print(f"[+] Author: {result['author']}")
                     print(f"[+] Status: {status}")
             
             elif choice == "4":
@@ -78,11 +78,9 @@ def main():
                 if not student_id or not book_id:
                     print("Student ID and Book ID are required. Please try again.")
                     continue
-                results = proxy.search_books(book_id)
-                if not results["success"]:
-                    print(f"[+] {results['message']}")
-                else:
-                    print(f"[-] {results['message']}")
+                result = proxy.borrow_book(student_id, book_id)
+                prefix = "[+]" if result.get("success") else "[-]"
+                print(f"{prefix} {result.get('message')}")
 
             elif choice == "5":
                 student_id = input("Enter your student ID: ").strip()
@@ -90,11 +88,9 @@ def main():
                 if not student_id or not book_id:
                     print("Student ID and Book ID are required. Please try again.")
                     continue
-                results = proxy.search_books(student_id, book_id)
-                if not results["success"]:
-                    print(f"[+] {results['message']}")
-                else:
-                    print(f"[-] {results['message']}")
+                result = proxy.search_book(student_id, book_id)
+                prefix = "[+]" if result.get("success") else "[-]"
+                print(f"{prefix} {result.get('message')}")
 
             elif choice == "6":
                 student_id = input("Enter your student ID to view borrowed books: ").strip()
