@@ -66,7 +66,7 @@ def main():
                 if not result.get("success"):
                     print(f"[-] {result.get('error')}")
                 else:
-                    status = "Available" if result["available"] else f"Unavailable (Borrowed by {results['borrower_id']})"
+                    status = "Available" if result["available"] else f"Unavailable (Borrowed by {result['borrower_id']})"
                     print(f"[+] Book ID: {result['book_id']}")
                     print(f"[+] Title: {result['title']}")
                     print(f"[+] Author: {result['author']}")
