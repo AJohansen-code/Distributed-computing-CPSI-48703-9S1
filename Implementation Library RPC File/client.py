@@ -18,7 +18,7 @@ def format_books_table(books):
     print(f"{'ID':<8} | {'Title':<45} | {'Author':<20} | {'Status':<12}")
     print("-" * 95)
     for book in books:
-        status = "Available" if book["avaliable"] else f"Borrowed by {book.get['borrower_id']}"
+        status = "Available" if book.get["avaliable"] else f"Borrowed by {book.get['borrower_id']}"
         title = (book["title"][:42] + "...") if len(book["title"]) > 45 else book["title"]
         author = (book["author"][:18] + "...") if len(book["author"]) > 20 else book["author"]
         print(f"{book['id']:<8} | {title:<45} | {author:<20} | {status:<12}")
