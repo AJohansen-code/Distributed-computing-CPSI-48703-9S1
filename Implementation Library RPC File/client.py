@@ -3,15 +3,16 @@ Library RPC Client - Menu-Driven Interface
 Library Management System using XML-RPC for client-server communication. 
 """
 
-import xmlrpc.client
 import socket
+import xmlrpc.client
 
 SERVER_URL = "http://localhost:8000"
 
 def format_books_table(books):
     """Format the list of books into a table-like string."""
     if not books:
-        return "No books found."
+        print("No books found.")
+        return
 
     print("-" * 95)
     print(f"{'ID':<8} | {'Title':<45} | {'Author':<20} | {'Status':<10}")
