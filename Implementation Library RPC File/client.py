@@ -15,17 +15,16 @@ def format_books_table(books):
         return
 
     print("-" * 95)
-    print(f"{'ID':<8} | {'Title':<45} | {'Author':<20} | {'Status':<10}")
+    print(f"{'ID':<8} | {'Title':<45} | {'Author':<20} | {'Status':<12}")
     print("-" * 95)
     for book in books:
-        status = "Available" if book["avaliable"] else f"Borrowed by {book['borrower_id']}"
+        status = "Available" if book["avaliable"] else f"Borrowed by {book.get['borrower_id']}"
         title = (book["title"][:42] + "...") if len(book["title"]) > 45 else book["title"]
         author = (book["author"][:18] + "...") if len(book["author"]) > 20 else book["author"]
         print(f"{book['id']:<8} | {title:<45} | {author:<20} | {status:<12}")
     print("-" * 95)
 
 def display_menu():
-    """Display the main menu options."""
     print("\n== Library Management Client ==")
     print("1. List all books")
     print("2. Search for a book")
@@ -110,7 +109,6 @@ def main():
 
         except (socket.error, xmlrpc.client.Fault) as e:
             print(f"Error communicating with the server: {e}")
-            print("Please ensure the server is running and try again.")
         except Exception as e:
             print(f"An unexpected error occurred: {e}")
 
