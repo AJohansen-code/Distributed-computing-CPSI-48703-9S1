@@ -114,13 +114,8 @@ class LibraryServer:
                 "success": True,
                 "message": f"Book '{book['title']}' has been successfully returned by Student ID {s_id}.",
                 "book_id": book["id"],
+                "borrower_id": book["borrower_id"]
             }
-
-    def view_borrowed_books(self, student_id):
-        """Procedure 6: View books currently borrowed by a specific student"""
-        s_id = student_id.strip().upper()
-        with self.lock:
-            return [dict(book) for book in self.inventory.vaules() if book["borrower_id"] == s_id]
 
     def run_server(host="localhost", port=8000):
         server = ThreadedXMLRPCServer((host, port), allow_none=True)
