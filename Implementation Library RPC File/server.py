@@ -88,24 +88,24 @@ class LibraryServer:
                 "book_id": book["id"],
                 "borrower_id": s_id
             }
-    def return_book(self, student_id, book_id, borrower_id):
+        
+    def return_book(self, student_id, book_id):
         """Procedure 5: Return a borrowed book."""
-        if not student_id or not book_id or not borrower_id:
-            return {"error": "Student ID, Book ID, and Borrower ID are required."}
+        if not student_id or not book_id:
+            return {"success": False, "message": "Student ID, Book ID, and Borrower ID are required."}
 
         s_id = student_id.strip().upper()
         b_id = book_id.strip().upper()
-        br_id = borrower_id.strip().upper()
 
         with self.lock:
             if b_id not in self.inventory:
-                return {"error": f"Book with ID {b_id} not found."}
+                return {"success": False, "message": f"Book with ID {b_id} not found."}
 
             book = self.inventory[b_id]
             if book["avaliable"]:
-                return {"error": f"Book '{book['title']}' is not currently borrowed."}
-            if book["borrower_id"] != br_id:
-                return {"error": f"Book '{book['title']}' was not borrowed by Borrower ID {br_id}."}
+                return {"success": False, "message": f"Book '{book['title']}' is not currently borrowed."}
+            if book["borrower_id"] != s_id:
+                return {"success": False, "message": f"Book '{book['title']}' was borrowed by {book['borrower_id']}, not {s_id}."}
 
             # Mark the book as returned
             book["avaliable"] = True
@@ -114,7 +114,6 @@ class LibraryServer:
                 "success": True,
                 "message": f"Book '{book['title']}' has been successfully returned by Student ID {s_id}.",
                 "book_id": book["id"],
-                "borrower_id": book["borrower_id"]
             }
 
     def run_server(host="localhost", port=8000):
