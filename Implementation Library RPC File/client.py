@@ -98,7 +98,7 @@ def main():
                     print("Student ID is required. Please try again.")
                     continue
                 books = proxy.view_borrowed_books(student_id)
-                print(f"\nBorrowed Books for Student ID {student_id}:")
+                print(f"\nBorrowed Books for Student ID {student_id.upper()}:")
                 format_books_table(books)
 
             elif choice == "7":
@@ -111,8 +111,6 @@ def main():
         except (socket.error, xmlrpc.client.Fault) as e:
             print(f"Error communicating with the server: {e}")
             print("Please ensure the server is running and try again.")
-        except xmlrpc.client.Fault as fault:
-            print(f"XML-RPC Fault: {fault.faultString}")
         except Exception as e:
             print(f"An unexpected error occurred: {e}")
 
