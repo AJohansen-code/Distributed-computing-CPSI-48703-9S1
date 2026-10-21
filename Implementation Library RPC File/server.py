@@ -116,6 +116,12 @@ class LibraryServer:
                 "book_id": book["id"],
             }
 
+    def view_borrowed_books(self, student_id):
+        """Procedure 6: View books currently borrowed by a specific student"""
+        s_id = student_id.strip().upper()
+        with self.lock:
+            return [dict(book) for book in self.inventory.vaules() if book["borrower_id"] == s_id]
+
     def run_server(host="localhost", port=8000):
         server = ThreadedXMLRPCServer((host, port), allow_none=True)
         server.register_instance(LibraryServer())
@@ -124,7 +130,7 @@ class LibraryServer:
         try:
             server.serve_forever()
         except KeyboardInterrupt:
-            print("Shutting down the server...")
+            print("\nShutting down the server...")
             server.server_close()
 
     if __name__ == "__main__":
