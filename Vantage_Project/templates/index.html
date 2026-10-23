@@ -36,6 +36,51 @@
         </div>
     </header>
 
-</body>
+    <main class="content-container">
+        <section>
+            <h1>Welcome to Little Rock!</h1>
+            <p class="subtitle">
+                Explore the many facets that this small part of Arkansas can show.
+                From the vibrant city life of downtown to the wild beauties of the outdoors now not far from your home.
+                Take part in the community by upload/ view pictures of great places to see and take photos at!  
+            </p>
+        </section>
 
+        <section class="interactive-grid">
+            <div id="map" class="map-box"></div>
+
+            <div class="upload-card"></div>
+            <form action="/upload" method="POST" enctype="multipart/form-data" id="upload-form">
+            <label for="file-input" class="upload-label">
+            <span class="upload-title">Upload Photos Here</span>
+            <span class="upload-sub">or</span>
+            <span class="upload-sub">click!</span>
+            <span class="choose-files-link">Choose files</span>
+
+            <div class="gallery-icon">
+              <svg viewbox="">
+
+              </svg>
+
+            </div>
+            </label>   
+            </form>
+        </section>
+    </main>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script>
+        const map = L.map('map').setView([34.7465, -92.2896], 13);
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      maxZoom: 19,
+      attribution: '© OpenStreetMap contributors'
+    }).addTo(map);
+
+    // Marker with popup
+    L.marker([34.7465, -92.2896]).addTo(map)
+      .bindPopup('I am a standalone popup.')
+      .openPopup();
+    </script>
+</body>
 </html>
