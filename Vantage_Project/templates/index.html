@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewpoint" content="width=device-width, initial-scale=1.0">
+    <title>
+        Vantage - Welcome to Little Rock
+    </title>
+
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+
+<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css')}}">
+</head>
+<body>
+    <header class="navbar">
+        <div class="nav-left">
+            <a href="/Vantage_Project/templates/index.html" class="brand">
+                <svg class="logo-icon" viewBox="0 0 24 24" fill="currentColor">
+                </svg>
+                <span class="brand-text">Vantage</span>
+            </a>
+        </div>
+
+        <nav class="nav-center">
+            <a href="#" class="nav-pill">Home</a>
+            <a href="#" class="nav-pill">About</a>
+            <a href="#" class="nav-pill">FAQ</a>
+            <a href="#" class="nav-pill">Explore</a>
+            <a href="#" class="nav-pill">How to use</a>
+        </nav>
+
+        <div class="nav-right">
+            <a href="#" class="nav-pill">Sign in</a>
+            <a href="#" class="nav-pill">Regester</a>
+        </div>
+    </header>
+
+</body>
+
+</html>
