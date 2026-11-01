@@ -1,11 +1,20 @@
-from flask import Flask, render_template, request, redirect, url_for
+from flask import Flask, render_template, request, redirect, url_for, session
 import os
+from datetime import datetime
 
 app = Flask(__name__)
+app.secret_key = 'Vantage_secret_key'  # Change this to a random secret key
 
-UPLOAD_FOLDER = os.path.join('stacic', 'uploads')
+UPLOAD_FOLDER = os.path.join('static', 'uploads')
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+
+#memory storage for demonstration purposes
+USER = {
+    'username': 'JohnDoe',
+    'password': 'password123'   #For demo purposes only will store password in plain text
+}
+UPLOADED_PHOTOS = []  # List to store uploaded file names
 
 @app.route('/')
 def home():

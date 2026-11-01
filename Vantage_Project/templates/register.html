@@ -1,0 +1,42 @@
+{% extends "index.html" %}
+
+{% block title %}Register - Vantage{% endblock %}
+
+{% block content %}
+<div class="auth-wapper">
+<div class="auth-card">
+    <div class="auth-header">
+        <h2>Create an Account</h2>
+        <p>Sign up to upload photos and explore Little Rock collections</p>
+    </div>
+
+    {% if form.errors %}
+        <div class="error-message">
+            <p>There were errors in your submission. Please correct them and try again.</p>
+        </div>
+    {% endif %}
+
+    <form action="{{ url_for('register') }}" method="post" class="auth-form">
+        {{ form.csrf_token }}
+        {{ form.hidden_tag() }}
+        <div class="form-group">
+            <label for="username">Username</label><br>
+            {{ form.username(size=32) }}
+        </div>
+        <div class="form-group">
+            <label for="email">Email</label><br>
+            {{ form.email(size=32) }}
+        </div>
+        <div class="form-group">
+            <label for="password">Password</label><br>
+            {{ form.password(size=32) }}
+        </div>
+        <button type="submit">Register</button>
+    </form>
+
+    <div class="auth-footer">
+        <p>Already have an account? <a href="{{ url_for('signin') }}">Sign in here</a></p>
+    </div>
+</div>
+
+{% endblock %}
