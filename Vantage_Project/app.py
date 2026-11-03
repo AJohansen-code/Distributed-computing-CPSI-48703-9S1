@@ -20,7 +20,7 @@ UPLOADED_PHOTOS = []  # List to store uploaded file names
 def home():
     return render_template('index.html')
 
-@app.route('/signin', methods=['POST'])
+@app.route('/signin', methods=['GET', 'POST'])
 def signin():
     if request.method == 'POST':
         username = request.form.get('username')
