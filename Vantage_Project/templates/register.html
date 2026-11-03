@@ -1,8 +1,43 @@
-{% extends "index.html" %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>
+        {% if register_mode %}
+            Vantage - Register
+        {% else %}
+            Vantage - Sign In
+        {% endif %}
+    </title>
+<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
 
-{% block title %}Register - Vantage{% endblock %}
+ <!-- Navigation Bar -->
+    <header class="navbar">
+        <div class="nav-left">
+           <a href="/" class="brand">
+        <svg class="logo-icon" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5a2.5 2.5 0 0 1 0-5 2.5 2.5 0 0 1 0 5z"/>
+        </svg>
+        <span class="brand-text">Vantage</span>
+      </a>
+    </div>
 
-{% block content %}
+        <nav class="nav-center">
+            <a href="#" class="nav-pill">Home</a>
+            <a href="#" class="nav-pill">About</a>
+            <a href="#" class="nav-pill">FAQ</a>
+            <a href="#" class="nav-pill">Explore</a>
+            <a href="#" class="nav-pill">How to use</a>
+        </nav>
+
+        <div class="nav-right">
+            <a href="{{ url_for('signin') }}" class="nav-pill">Sign in</a>
+            <a href="{{ url_for('register') }}" class="nav-pill">Register</a>
+        </div>
+    </header>
+    
 <div class="auth-wapper">
 <div class="auth-card">
     <div class="auth-header">
