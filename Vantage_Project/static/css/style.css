@@ -45,8 +45,8 @@ body {
 }
 
 .nav-pill {
-    background-color: #b4a89d;
-    color: #1d1d1d33;
+    background-color: #f0e0d2;
+    color: #00000033;
     text-decoration: none;
     padding: 6px 18px;
     border-radius: 9999px;
@@ -55,7 +55,7 @@ body {
 }
 
 .nav-pill:hover{
-    background-color: #b9b5b5;
+    background-color: #f0eeee;
 }
 
 /*Banner Grid Styles*/
