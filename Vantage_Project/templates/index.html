@@ -7,10 +7,9 @@
         Vantage - Welcome to Little Rock
     </title>
 
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
-
-<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
 <body>
     <!-- Navigation Bar -->
@@ -24,8 +23,8 @@
       </a>
     </div>
 
-        <nav class="nav-center">
-            <a href="#" class="nav-pill">Home</a>
+        <nav class="nav-center" aria-label="Main Navigation">
+            <a href="#" class="nav-pill active">Home</a>
             <a href="#" class="nav-pill">About</a>
             <a href="#" class="nav-pill">FAQ</a>
             <a href="#" class="nav-pill">Explore</a>
@@ -66,7 +65,7 @@
             </div>
             <div class="radius-control">
                 <label for="radius-select">Within:</label>
-                <select id="radius-select" aria-label="Select radius in kilometers">
+                <select id="radius-select" class="select-dropdown" aria-label="Select radius in kilometers">
                     <option value="8">8 kilometers</option>
                     <option value="16">16 kilometers</option>
                     <option value="24" selected>24 kilometers</option>
@@ -74,7 +73,7 @@
                     <option value="40">40 kilometers</option>
                 </select>
             </div>
-          </section> 
+        </section>
 
             <!-- Interactive map -->
         <section class="interactive-container">
@@ -117,21 +116,20 @@
     <!--Map detail slider-->>
     <aside id="spot-modal" class="modal-drawer hidden" role="dialog" aria-modal="true" aria-labelledby="modal-title">
         <div class="spot-modal-content">
-            <button id="close-modal" class="close-button" aria-label="Close">&times;</button>
-            <img id="modal-image" class="modal-image" src="" alt="">
+           <button id="close-modal-btn" class="close-btn" aria-label="Close">&times;</button>
+            <img id="modal-img" class="modal-image" src="" alt="">
             <div class="modal-body">
-              <span id="modal-category" class="tag"></span>
-            <h2 id="modal-title"></h2>
-            <p id="modal-description"></p>
-            <div class="modal-meta">
-                <span id="modal-rating" class="meta-item"></span>
-                <span id="modal-photo" class="meta-item"></span>
-            </div>
-                <!-- Spot details will be dynamically inserted here -->
+                <span id="modal-category" class="tag"></span>
+                <h2 id="modal-title"></h2>
+                <p id="modal-desc" class="modal-desc"></p>
+                <div class="modal-meta">
+                    <span id="modal-rating" class="meta-item"></span>
+                    <span id="modal-photos" class="meta-item"></span>
+                </div>
             </div>
         </div>
     </aside>
 
-    <script type="module" src="{{ url_for('static', filename='js/api.js') }}"></script>
+    <script type="module" src="{{ url_for('static', filename='js/app.js') }}"></script>
 </body>
 </html>
