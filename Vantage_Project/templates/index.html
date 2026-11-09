@@ -56,9 +56,41 @@
             </p>
         </section>
 
-        <section class="interactive-container">
-            <div id="map" class="map-box"></div>
+        <!-- Filter toolbar -->
+        <section class="filter-toolbar" aria-label="Nearby Filters">
+            <div class="filter-group" role="group" aria-label="Category Filter">
+              <button id="filter-toggle" class="filter-pill active" data-category="ALL" aria-pressed="true">All Spots</button>
+              <button id="filter-toggle" class="filter-pill" data-category="Landmark" aria-pressed="false">Landmarks</button>
+              <button id="filter-toggle" class="filter-pill" data-category="Scenic" aria-pressed="false">Scenic</button>
+              <button id="filter-toggle" class="filter-pill" data-category="Dining" aria-pressed="false">Dining</button>
+            </div>
+            <div class="radius-control">
+                <label for="radius-select">Within:</label>
+                <select id="radius-select" aria-label="Select radius in kilometers">
+                    <option value="8">8 kilometers</option>
+                    <option value="16">16 kilometers</option>
+                    <option value="24" selected>24 kilometers</option>
+                    <option value="32">32 kilometers</option>
+                    <option value="40">40 kilometers</option>
+                </select>
+            </div>
+          </section> 
 
+            <!-- Interactive map -->
+        <section class="interactive-container">
+            <div id="map" class="map-box" role="region" aria-label="Interactive Little Rock Map"></div>
+
+            <section class="ranked-section" aria-live="polite">
+            <div class="ranked-header">
+              <h2>Ranked Spots</h2>
+              <span id="results-count" class="badge">Loading...</span>
+            </div>
+            <div id="spots-list" class="spots-list">
+              <!-- Ranked spots will be dynamically inserted here -->
+            </div>
+          </section>
+
+            <!-- upload Card-->>
             <div class="upload-card">
               <form action="/upload" method="POST" enctype="multipart/form-data" id="upload-form">
                 <label for="file-input" class="upload-label">
@@ -82,18 +114,24 @@
     </section>
   </main>
 
-    <script>
-        const map = L.map('map').setView([34.7465, -92.2896], 13);
+    <!--Map detail slider-->>
+    <aside id="spot-modal" class="modal-drawer hidden" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+        <div class="spot-modal-content">
+            <button id="close-modal" class="close-button" aria-label="Close">&times;</button>
+            <img id="modal-image" class="modal-image" src="" alt="">
+            <div class="modal-body">
+              <span id="modal-category" class="tag"></span>
+            <h2 id="modal-title"></h2>
+            <p id="modal-description"></p>
+            <div class="modal-meta">
+                <span id="modal-rating" class="meta-item"></span>
+                <span id="modal-photo" class="meta-item"></span>
+            </div>
+                <!-- Spot details will be dynamically inserted here -->
+            </div>
+        </div>
+    </aside>
 
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      maxZoom: 19,
-      attribution: '© OpenStreetMap contributors'
-    }).addTo(map);
-
-    // Marker with popup
-    L.marker([34.7465, -92.2896]).addTo(map)
-      .bindPopup('I am a standalone popup.')
-      .openPopup();
-    </script>
+    <script type="module" src="{{ url_for('static', filename='js/api.js') }}"></script>
 </body>
 </html>
