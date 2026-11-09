@@ -22,7 +22,7 @@ function initMap() {
 }
 
 function initFilterControls() {
-    const filterButtons = document.querySelectorAll('.filter-btn');
+    const filterButtons = document.querySelectorAll('.filter-pill');
     const radiusSelect = document.getElementById('radius-select');
 
     filterButtons.forEach(btn => {
@@ -40,7 +40,7 @@ function initFilterControls() {
     });
 
     radiusSelect.addEventListener('change', () => {
-        const activeBtn = document.querySelector('.filter-btn.active');
+        const activeBtn = document.querySelector('.filter-pill.active');
         const category = activeBtn ? activeBtn.getAttribute('data-category') : "All";
         loadSpots(category, radiusSelect.value);
     });
