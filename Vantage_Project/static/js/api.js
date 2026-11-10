@@ -1,9 +1,16 @@
 /**
  * Shared Vantage API Adapter
  * Alicia (#17): Owns adapter shape & fixtures
+ * Kaden:
+ * Grayson (#24): Connects to /api/spots/nearby
  */
 
 const USE_FIXTURES = true; 
+
+const DEFAULT_CENTER = {
+    lat: 34.7465,
+    lng: -92.2896
+}
 
 // Mock contract fixtures for Little Rock locations
 const MOCK_SPOTS = [
@@ -57,24 +64,62 @@ const MOCK_SPOTS = [
     }
 ];
 
+function getDistanceMeters(lat1, lon1, lat2, lon2) {
+    const R = 6371e3;
+    const phi1 = (lat1 * Math.PI) / 180;
+    const phi2 = (lat2 * Math.PI) / 180;
+    const deltaPhi = ((lat2 - lat1) * Math.PI) / 180;
+    const deltaLambda = ((lon2 - lon1) * Math.PI) / 180;
+
+    const a =
+        Math.sin(deltaPhi / 2) * Math.sin(deltaPhi / 2) + 
+        Math.con(phi1) * Math.cos(phi2) * Math.sin(deltaLambda / 2) * Math.sin(deltaLambda / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+
+    return R * c;
+}
+
 export const VantageAPI = {
-    /*Fetch ranked spots based on category and radius filters*/
-    async getRankedSpots(category = "All", radiusMiles = 15) {
+    /*Fetch nearby spots using latitude, longitude, and radius_meters*/
+    
+    async getNearbySpots(latitude = DEFAULT_CENTER.lat, longitude = DEFAULT_CENTER.lng, radiusMeters = 3000, category = "All") {
         if (USE_FIXTURES) {
             return new Promise((resolve) => {
                 setTimeout(() => {
-                    let results = [...MOCK_SPOTS];
-                    if (category !== "All") {
-                        results = results.filter(spot => spot.category.toLowerCase() === category.toLowerCase());
-                    }
-                    resolve({ status: 200, data: results });
-                }, 400); // Simulated network delay to test loading skeletons
+                    let results = MOCK_SPOTS.filter((spot) => {
+                        const dist = getDistanceMeters(latitude, longitude, spot.latitude, spot.longitude);
+                        const withinRadius = dist <= radiusMeters;
+                        const matchesCategory =
+                            category === "All" || spot.category.toLowerCase() === category.toLowerCase();
+                        return withinRadius && matchesCategory;
+                    });
+
+                    // Sort by rank
+                    results.sort((a, b) => a.rank - b.rank);
+
+                    resolve({
+                        status: 200,
+                        data: {
+                            center: { latitude, longitude },
+                            radius_meters: radiusMeters,
+                            spots: results
+                        }
+                    });
+                }, 300);
             });
         }
 
-        const response = await fetch(`/api/spots?category=${encodeURIComponent(category)}&radius=${radiusMiles}`);
-        if (!response.ok) throw new Error("Failed to fetch spots from gateway");
-        return { status: response.status, data: await response.json() };
+        // Live gateway endpoint
+        const params = new URLSearchParams({
+            latitude,
+            longitude,
+            radius_meters: radiusMeters,
+            category
+        });
+
+        const response = await fetch(`/api/spots/nearby?${params.toString()}`);
+        if (!response.ok) throw new Error("Failed to fetch nearby spots from gateway");
+        return await response.json();
     },
 
     async getSpotDetails(spotId) {
@@ -84,13 +129,13 @@ export const VantageAPI = {
                     const spot = MOCK_SPOTS.find(s => s.id === spotId);
                     if (spot) resolve({ status: 200, data: spot });
                     else reject(new Error("Spot not found"));
-                }, 200);
+                }, 150);
             });
         }
 
         const response = await fetch(`/api/spots/${encodeURIComponent(spotId)}`);
         if (!response.ok) throw new Error("Could not load spot details");
-        return { status: response.status, data: await response.json() };
+        return await response.json();
     },
 
     /* Photo upload endpoint */
