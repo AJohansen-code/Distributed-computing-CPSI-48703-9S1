@@ -24,8 +24,8 @@ const MOCK_SPOTS = [
         lng: -92.2896,
         latitude: 34.7465,
         longitude: -92.2896,
-        thumbnail: "https://images.unsplash.com/photo-1590483236906-8d147bbba7e1?auto=format&fit=crop&w=600&q=80",
-        description: "A century-old Neoclassical landmark modeled after the US Capitol, crafted from Arkansas limestone and Batesville granite.",
+        thumbnail: "/static/images/Arkansas.1.png",
+        description: "Century-old Neoclassical landmark modeled after the US Capitol, crafted from Arkansas limestone.",
         photoCount: 142,
         photo_count: 142
     },
@@ -35,12 +35,12 @@ const MOCK_SPOTS = [
         category: "Scenic",
         rank: 2,
         rating: 4.8,
-        lat: 34.7505,
+        lat: 34.7510,
         lng: -92.2680,
-        latitude: 34.7505,
+        latitude: 34.7510,
         longitude: -92.2680,
-        thumbnail: "https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=600&q=80",
-        description: "Historic converted railroad bridge spanning the Arkansas River with panoramic sunset views of the city skyline.",
+        thumbnail: "/static/images/Arkansas.2.png",
+        description: "Historic converted railroad bridge spanning the Arkansas River with skyline sunset views.",
         photoCount: 98,
         photo_count: 98
     },
@@ -51,28 +51,28 @@ const MOCK_SPOTS = [
         rank: 3,
         rating: 4.6,
         lat: 34.7478,
-        lng: -92.2638,
+        lng: -92.2640,
         latitude: 34.7478,
-        longitude: -92.2638,
-        thumbnail: "https://images.unsplash.com/photo-1555396273-367ea4eb4db5?auto=format&fit=crop&w=600&q=80",
-        description: "The downtown community anchor featuring bustling local food stalls, weekend farmers markets, and outdoor lawns.",
+        longitude: -92.2640,
+        thumbnail: "/static/images/Arkansas.3.png",
+        description: "The downtown community anchor featuring local food stalls, farmers markets, and outdoor lawns.",
         photoCount: 76,
         photo_count: 76
     },
     {
         id: "spot-4",
-        name: "Pinnacle Mountain West Summit",
-        category: "Scenic",
+        name: "Historic Arkansas Museum",
+        category: "Landmark",
         rank: 4,
-        rating: 4.8,
-        lat: 34.8437,
-        lng: -92.4842,
-        latitude: 34.8437,
-        longitude: -92.4842,
-        thumbnail: "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=600&q=80",
-        description: "Iconic cone-shaped peak providing rugged hiking trails and 360-degree vistas across the Arkansas River Valley.",
-        photoCount: 310,
-        photo_count: 310
+        rating: 4.7,
+        lat: 34.7450,
+        lng: -92.2710,
+        latitude: 34.7450,
+        longitude: -92.2710,
+        thumbnail: "/static/images/Arkansas.1.png",
+        description: "Living history museum preserving Arkansas's frontier heritage and historic downtown homes.",
+        photoCount: 54,
+        photo_count: 54
     }
 ];
 
@@ -84,44 +84,55 @@ function getDistanceMeters(lat1, lon1, lat2, lon2) {
     const deltaLambda = ((lon2 - lon1) * Math.PI) / 180;
 
     const a =
-        Math.sin(deltaPhi / 2) * Math.sin(deltaPhi / 2) + 
-        Math.con(phi1) * Math.cos(phi2) * Math.sin(deltaLambda / 2) * Math.sin(deltaLambda / 2);
+        Math.sin(deltaPhi / 2) * Math.sin(deltaPhi / 2) +
+        Math.cos(phi1) * Math.cos(phi2) * Math.sin(deltaLambda / 2) * Math.sin(deltaLambda / 2);
     const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 
     return R * c;
 }
 
 export const VantageAPI = {
-    /*Fetch nearby spots using latitude, longitude, and radius_meters*/
-
-    async getNearbySpots(latitude = DEFAULT_CENTER.lat, longitude = DEFAULT_CENTER.lng, radiusMeters = 3000, category = "All") {
+    async getNearbySpots(latitude = DEFAULT_CENTER.lat, longitude = DEFAULT_CENTER.lng, radiusMeters = 5000, category = "All") {
         if (USE_FIXTURES) {
-            return new Promise((resolve) => {
+            return new Promise((resolve, reject) => {
                 setTimeout(() => {
-                    let results = MOCK_SPOTS.filter((spot) => {
-                        const dist = getDistanceMeters(latitude, longitude, spot.latitude, spot.longitude);
-                        const withinRadius = dist <= radiusMeters;
-                        const matchesCategory =
-                            category.toLocaleLowerCase === "all" || spot.category.toLowerCase() === category.toLowerCase();
-                        return withinRadius && matchesCategory;
-                    });
+                    try {
+                        const catClean = (category || "All").trim().toLowerCase();
 
-                    // Sort by rank
-                    results.sort((a, b) => a.rank - b.rank);
+                        let results = MOCK_SPOTS.filter((spot) => {
+                            const spotLat = spot.latitude ?? spot.lat;
+                            const spotLng = spot.longitude ?? spot.lng;
+                            const dist = getDistanceMeters(latitude, longitude, spotLat, spotLng);
+                            const withinRadius = dist <= radiusMeters;
 
-                    resolve({
-                        status: 200,
-                        data: {
-                            center: { latitude, longitude },
-                            radius_meters: radiusMeters,
-                            spots: results
-                        }
-                    });
-                }, 200);
+                            // Match "All", or fuzzy match "Landmark"/"Landmarks"
+                            const spotCat = spot.category.toLowerCase();
+                            const matchesCategory =
+                                catClean === "all" ||
+                                spotCat === catClean ||
+                                spotCat.startsWith(catClean.slice(0, 4)) ||
+                                catClean.startsWith(spotCat.slice(0, 4));
+
+                            return withinRadius && matchesCategory;
+                        });
+
+                        results.sort((a, b) => a.rank - b.rank);
+
+                        resolve({
+                            status: 200,
+                            data: {
+                                spots: results,
+                                radius_meters: radiusMeters,
+                                center: { latitude, longitude }
+                            }
+                        });
+                    } catch (err) {
+                        reject(err);
+                    }
+                }, 150);
             });
         }
 
-        // Live gateway endpoint
         const params = new URLSearchParams({ latitude, longitude, radius_meters: radiusMeters, category });
         const response = await fetch(`/api/spots/nearby?${params.toString()}`);
         if (!response.ok) throw new Error("Failed to fetch nearby spots");
@@ -136,9 +147,13 @@ export const VantageAPI = {
         if (USE_FIXTURES) {
             return new Promise((resolve, reject) => {
                 setTimeout(() => {
-                    const spot = MOCK_SPOTS.find(s => s.id === spotId);
-                    if (spot) resolve({ status: 200, data: spot });
-                    else reject(new Error("Spot not found"));
+                    try {
+                        const spot = MOCK_SPOTS.find((s) => s.id === spotId);
+                        if (spot) resolve({ status: 200, data: spot });
+                        else reject(new Error("Spot not found"));
+                    } catch (err) {
+                        reject(err);
+                    }
                 }, 100);
             });
         }
@@ -148,13 +163,12 @@ export const VantageAPI = {
         return await response.json();
     },
 
-    /* Photo upload endpoint */
     async uploadPhoto(formData) {
         if (USE_FIXTURES) {
             return new Promise((resolve) => {
                 setTimeout(() => {
                     resolve({ status: 201, message: "Photo uploaded successfully (Fixture Mode)" });
-                }, 600);
+                }, 300);
             });
         }
 

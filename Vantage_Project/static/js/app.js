@@ -21,6 +21,9 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 function initMap() {
+    const mapElement = document.getElementById('map');
+    if (!mapElement) return;
+
     mapInstance = L.map('map').setView(MAP_CENTER, 13);
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         maxZoom: 19,
@@ -36,7 +39,7 @@ function initFilterControls() {
 
     filterButtons.forEach(btn => {
         btn.addEventListener('click', () => {
-            filterButtons.forEach(b => {
+            filterButtons.forEach((b) => {
                 b.classList.remove('active');
                 b.setAttribute('aria-pressed', 'false');
             });
@@ -44,8 +47,8 @@ function initFilterControls() {
             btn.setAttribute('aria-pressed', 'true');
 
             const category = btn.getAttribute('data-category');
-            const radiusMeters = radiusSelect ? parseInt(radiusSelect.value, 10) : 3000;
-            loadSpots(category, radiusSelect.value);
+            const radiusMeters = radiusSelect ? parseInt(radiusSelect.value, 10) : 5000;
+            loadSpots(category, radiusMeters);
         });
     });
 
@@ -92,7 +95,7 @@ async function loadSpots(category, radiusMeters) {
             spots = response.data.spots;
         }
 
-        markersLayer.clearLayers();
+        if (markersLayer) markersLayer.clearLayers();
 
         if (spots.length === 0) {
             if (countBadge) countBadge.textContent = "0 found";
@@ -106,8 +109,9 @@ async function loadSpots(category, radiusMeters) {
         if (listEl) listEl.innerHTML = "";
 
         spots.forEach(spot => {
-            const lat = spot.latitude;
-            const lng = spot.longitude;4
+            const lat = spot.latitude ?? spot.lat ;
+            const lng = spot.longitude ?? spot.lng;
+            const photos = spot.photo_count ?? spot.photoCount ?? 0;
 
             const card = document.createElement('article');
             card.className = "spot-card";
@@ -115,15 +119,16 @@ async function loadSpots(category, radiusMeters) {
             card.setAttribute('role', 'button');
             card.setAttribute('aria-label', `View details for ${spot.name}`);
             card.innerHTML = `
-                <img src="${spot.thumbnail}" alt="${spot.name}">
+                <img src="${spot.thumbnail}" alt="${spot.name}" onerror="this.onerror=null; this.src='/static/images/Arkansas.1.png';">
                 <div class="spot-card-info">
                     <h3><span class="rank-tag">#${spot.rank}</span>${spot.name}</h3>
-                    <p>${spot.category} • ⭐ ${spot.rating} (${spot.photoCount} photos)</p>
+                    <p>${spot.category} • ⭐ ${spot.rating} (${photos} photos)</p>
                 </div>
             `;
 
+
             const openDetails = () => {
-                mapInstance.flyTo([lat, lng], 15);
+               if (mapInstance) mapInstance.flyTo([lat, lng], 15);
                 displaySpotDetails(spot.id);
             };
 
@@ -138,12 +143,15 @@ async function loadSpots(category, radiusMeters) {
             if (listEl) listEl.appendChild(card);
 
             // Add Leaflet Pin
+        if (markersLayer) {
             const marker = L.marker([lat, lng]).addTo(markersLayer);
             marker.bindPopup(`<b>${spot.name}</b><br>${spot.category}`);
             marker.on('click', () => displaySpotDetails(spot.id));
+          }
         });
  // 3. Error State
     } catch (err) {
+        console.error("loadSpots Error", err);
         if (requestId === currentRequestId) {
             if (countBadge) countBadge.textContent = "Error";
             if (listEl) {
@@ -176,7 +184,7 @@ async function displaySpotDetails(spotId) {
             imgEl.alt = spot.name;
         }
         if (ratingEl) ratingEl.textContent = `Rating: ⭐ ${spot.rating}`;
-        if (photoEl) photoEl.textContent = `${spot.photo_count} Photos`;
+        if (photoEl) photoEl.textContent = `${spot.photo_count ?? spot.photoCount} Community Photos`;
 
         modal.classList.remove('hidden');
         const closeBtn = document.getElementById('close-modal');
@@ -188,38 +196,22 @@ async function displaySpotDetails(spotId) {
 
 function initSpotModal() {
     const modal = document.getElementById('spot-modal');
-    const closeBtn = document.getElementById('close-modal')
+    const closeBtn = document.getElementById('close-modal');
     if (modal && closeBtn) {
-    closeBtn.addEventListener('click', () => {
-        modal.classList.add('hidden');
-    });
-  }
+        closeBtn.addEventListener('click', () => {
+            modal.classList.add('hidden');
+        });
+    }
 }
 
-function initUploadModal() {
-    const form = document.getElementById('active-upload-form');
-    const fileInput = document.getElementById('modal-file-input');
+function initUploadCard() {
+    const fileInput = document.getElementById('file-input');
     const fileChosenPreview = document.getElementById('file-chosen-name');
 
     if (fileInput && fileChosenPreview) {
         fileInput.addEventListener('change', () => {
             if (fileInput.files.length > 0) {
                 fileChosenPreview.textContent = `Selected: ${fileInput.files[0].name}`;
-            }
-        });
-    }
-
-    if (form) {
-        form.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const formData = new FormData(form);
-            try {
-                await VantageAPI.uploadPhoto(formData);
-                alert("Photo uploaded successfully!");
-                form.reset();
-                if (fileChosenPreview) fileChosenPreview.textContent = "";
-            } catch (err) {
-                alert("Upload failed. Check gateway connection.");
             }
         });
     }
