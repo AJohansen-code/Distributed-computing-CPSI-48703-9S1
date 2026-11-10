@@ -66,8 +66,8 @@
             <div class="radius-control">
                 <label for="radius-select">Within:</label>
                 <select id="radius-select" class="select-dropdown" aria-label="Select radius in meters">
-                    <option value="1000">1 km</option>
-                    <option value="2500">2.5 km</option>
+                    <option value="1500">1.5 km</option>
+                    <option value="3000">3 km</option>
                     <option value="5000" selected>5 km (Max)</option>
                 </select>
             </div>
@@ -115,15 +115,15 @@
     <!--Map detail slider-->>
     <aside id="spot-modal" class="modal-drawer hidden" role="dialog" aria-modal="true" aria-labelledby="modal-title">
         <div class="spot-modal-content">
-           <button id="close-modal" class="close-btn" aria-label="Close">&times;</button>
-            <img id="modal-img" class="modal-image" src="" alt="">
+            <button id="close-modal" class="close-btn" aria-label="Close">&times;</button>
+            <img id="modal-image" class="modal-image" src="" alt="">
             <div class="modal-body">
                 <span id="modal-category" class="tag"></span>
                 <h2 id="modal-title"></h2>
                 <p id="modal-description" class="modal-desc"></p>
                 <div class="modal-meta">
                     <span id="modal-rating" class="meta-item"></span>
-                    <span id="modal-photos" class="meta-item"></span>
+                    <span id="modal-photo" class="meta-item"></span>
                 </div>
             </div>
         </div>
