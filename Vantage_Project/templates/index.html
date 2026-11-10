@@ -15,7 +15,7 @@
     <!-- Navigation Bar -->
     <header class="navbar">
         <div class="nav-left">
-           <a href="/" class="brand">
+           <a href="/" class="brand" aria-label="Vantage Homepage">
         <svg class="logo-icon" viewBox="0 0 24 24" fill="currentColor">
           <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5a2.5 2.5 0 0 1 0-5 2.5 2.5 0 0 1 0 5z"/>
         </svg>
@@ -57,20 +57,18 @@
 
         <!-- Filter toolbar -->
         <section class="filter-toolbar" aria-label="Nearby Filters">
-            <div class="filter-group" role="group" aria-label="Category Filter">
-              <button id="filter-toggle" class="filter-pill active" data-category="ALL" aria-pressed="true">All Spots</button>
-              <button id="filter-toggle" class="filter-pill" data-category="Landmark" aria-pressed="false">Landmarks</button>
-              <button id="filter-toggle" class="filter-pill" data-category="Scenic" aria-pressed="false">Scenic</button>
-              <button id="filter-toggle" class="filter-pill" data-category="Dining" aria-pressed="false">Dining</button>
+            <div class="filter-group" role="radiogroup" aria-label="Category Filter">
+              <button type="button" class="filter-pill active" data-category="ALL" aria-pressed="true">All Spots</button>
+              <button type="button" class="filter-pill" data-category="Landmark" aria-pressed="false">Landmarks</button>
+              <button type="button" class="filter-pill" data-category="Scenic" aria-pressed="false">Scenic</button>
+              <button type="button" class="filter-pill" data-category="Dining" aria-pressed="false">Dining</button>
             </div>
             <div class="radius-control">
                 <label for="radius-select">Within:</label>
-                <select id="radius-select" class="select-dropdown" aria-label="Select radius in kilometers">
-                    <option value="8">8 kilometers</option>
-                    <option value="16">16 kilometers</option>
-                    <option value="24" selected>24 kilometers</option>
-                    <option value="32">32 kilometers</option>
-                    <option value="40">40 kilometers</option>
+                <select id="radius-select" class="select-dropdown" aria-label="Select radius in meters">
+                    <option value="1000">1 km</option>
+                    <option value="2500">2.5 km</option>
+                    <option value="5000" selected>5 km (Max)</option>
                 </select>
             </div>
         </section>
@@ -107,7 +105,8 @@
                   <span class="choose-files-link">Choose files</span>
             </div>
           </label>
-          <input type="file" id="file-input" name="file" accept="image/*" style="display: none;" onchange="document.getElementById('upload-form').submit();">
+          <input type="file" id="file-input" name="file" accept="image/*" style="display: none;" onchange="document.getElementById('active-upload-form').submit();">
+          <span id="file-chosen-name" class="file-name-preview"></span>
         </form>
       </div>
     </section>
@@ -116,12 +115,12 @@
     <!--Map detail slider-->>
     <aside id="spot-modal" class="modal-drawer hidden" role="dialog" aria-modal="true" aria-labelledby="modal-title">
         <div class="spot-modal-content">
-           <button id="close-modal-btn" class="close-btn" aria-label="Close">&times;</button>
+           <button id="close-modal" class="close-btn" aria-label="Close">&times;</button>
             <img id="modal-img" class="modal-image" src="" alt="">
             <div class="modal-body">
                 <span id="modal-category" class="tag"></span>
                 <h2 id="modal-title"></h2>
-                <p id="modal-desc" class="modal-desc"></p>
+                <p id="modal-description" class="modal-desc"></p>
                 <div class="modal-meta">
                     <span id="modal-rating" class="meta-item"></span>
                     <span id="modal-photos" class="meta-item"></span>
