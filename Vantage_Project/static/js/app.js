@@ -15,7 +15,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const activeFilterBtn = document.querySelector('.filter-pill.active');
     const initialCategory = activeFilterBtn ? activeFilterBtn.getAttribute('data-category') : 'All';
     const radiusSelect = document.getElementById('radius-select');
-    const initialRadius = radiusSelect ? parseInt(radiusSelect.value, 10) : 3000;
+    const initialRadius = radiusSelect ? parseInt(radiusSelect.value, 10) : 5000;
 
     loadSpots(initialCategory, initialRadius)
 });
@@ -58,7 +58,7 @@ function initFilterControls() {
   }
 }
 
-async function loadSpots(category, radius) {
+async function loadSpots(category, radiusMeters) {
     const listEl = document.getElementById('spots-list');
     const countBadge = document.getElementById('results-count');
 
@@ -82,18 +82,22 @@ async function loadSpots(category, radius) {
             category
         );
 
-        if (requestId != currentRequestId) {
-            return;
+        if (requestId !== currentRequestId) return;
+
+        // Support both direct array and nested object contract
+        let spots = [];
+        if (Array.isArray(response.data)) {
+            spots = response.data;
+        } else if (response.data && Array.isArray(response.data.spots)) {
+            spots = response.data.spots;
         }
 
-        const spots = response.data.spots || [];
         markersLayer.clearLayers();
 
-        // 2. Empty State
-        if (!spots || spots.length === 0) {
+        if (spots.length === 0) {
             if (countBadge) countBadge.textContent = "0 found";
             if (listEl) {
-            listEl.innerHTML = `<p class="empty-state">No locations found within ${(radiusMeters / 1000).toFixed(1)} km.</p>`;
+                listEl.innerHTML = `<p class="empty-state">No locations found within ${(radiusMeters / 1000).toFixed(1)} km.</p>`;
             }
             return;
         }
