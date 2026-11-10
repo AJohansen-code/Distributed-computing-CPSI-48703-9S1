@@ -2,17 +2,26 @@ import { VantageAPI } from './api.js';
 
 let mapInstance;
 let markersLayer;
+let currentRequestId = 0;
+
+const MAP_CENTER = [34.7465, -92.2896];
 
 document.addEventListener('DOMContentLoaded', () => {
     initMap();
     initFilterControls();
     initUploadModal();
     initSpotModal();
-    loadSpots("All", 15);
+
+    const activeFilterBtn = document.querySelector('.filter-pill.active');
+    const initialCategory = activeFilterBtn ? activeFilterBtn.getAttribute('data-category') : 'All';
+    const radiusSelect = document.getElementById('radius-select');
+    const initialRadius = radiusSelect ? parseInt(radiusSelect.value, 10) : 3000;
+
+    loadSpots(initialCategory, initialRadius)
 });
 
 function initMap() {
-    mapInstance = L.map('map').setView([34.7465, -92.2896], 12);
+    mapInstance = L.map('map').setView(MAP_CENTER, 13);
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         maxZoom: 19,
         attribution: '© OpenStreetMap contributors'
@@ -35,45 +44,67 @@ function initFilterControls() {
             btn.setAttribute('aria-pressed', 'true');
 
             const category = btn.getAttribute('data-category');
+            const radiusMeters = radiusSelect ? parseInt(radiusSelect.value, 10) : 3000;
             loadSpots(category, radiusSelect.value);
         });
     });
 
-    radiusSelect.addEventListener('change', () => {
-        const activeBtn = document.querySelector('.filter-pill.active');
-        const category = activeBtn ? activeBtn.getAttribute('data-category') : "All";
-        loadSpots(category, radiusSelect.value);
+    if (radiusSelect) {
+        radiusSelect.addEventListener('change', () => {
+            const activeBtn = document.querySelector('.filter-pill.active');
+            const category = activeBtn ? activeBtn.getAttribute('data-category') : 'All';
+            loadSpots(category, parseInt(radiusSelect.vaule, 10)); 
     });
+  }
 }
 
 async function loadSpots(category, radius) {
     const listEl = document.getElementById('spots-list');
     const countBadge = document.getElementById('results-count');
 
+    const requestId = ++currentRequestId;
+
     // 1. Loading State
-    listEl.innerHTML = `
-        <div class="skeleton-card" aria-hidden="true"></div>
-        <div class="skeleton-card" aria-hidden="true"></div>
-        <div class="skeleton-card" aria-hidden="true"></div>
+    if (listEl) {
+       listEl.innerHTML = `
+         <div class="skeleton-card" aria-hidden="true"></div>
+         <div class="skeleton-card" aria-hidden="true"></div>
+         <div class="skeleton-card" aria-hidden="true"></div>
     `;
+    }
+    if (countBadge) countBadge.textContent = "Loading...";4
 
     try {
-        const response = await VantageAPI.getRankedSpots(category, radius);
-        const spots = response.data;
+        const response = await VantageAPI.getRankedSpots(
+            MAP_CENTER[0],
+            MAP_CENTER[1],
+            radiusMeters,
+            category
+        );
+
+        if (requestId != currentRequestId) {
+            return;
+        }
+
+        const spots = response.data.spots || [];
         markersLayer.clearLayers();
 
         // 2. Empty State
         if (!spots || spots.length === 0) {
-            countBadge.textContent = "0 found";
-            listEl.innerHTML = `<p class="empty-state">No locations found for this selection.</p>`;
+            if (countBadge) countBadge.textContent = "0 found";
+            if (listEl) {
+            listEl.innerHTML = `<p class="empty-state">No locations found within ${(radiusMeters / 1000).toFixed(1)} km.</p>`;
+            }
             return;
         }
 
-        countBadge.textContent = `${spots.length} found`;
-        listEl.innerHTML = "";
+        if (countBadge) countBadge.textContent = `${spots.length} found`;
+        if (listEl) listEl.innerHTML = "";
 
         spots.forEach(spot => {
-            // Render card
+            const lat = spot.latitude;
+            const lng = spot.longitude;4
+
             const card = document.createElement('article');
             card.className = "spot-card";
             card.tabIndex = 0;
@@ -88,7 +119,7 @@ async function loadSpots(category, radius) {
             `;
 
             const openDetails = () => {
-                mapInstance.flyTo([spot.lat, spot.lng], 14);
+                mapInstance.flyTo([lat, lng], 15);
                 displaySpotDetails(spot.id);
             };
 
@@ -100,90 +131,92 @@ async function loadSpots(category, radius) {
                 }
             });
 
-            listEl.appendChild(card);
+            if (listEl) listEl.appendChild(card);
 
             // Add Leaflet Pin
-            const marker = L.marker([spot.lat, spot.lng]).addTo(markersLayer);
+            const marker = L.marker([lat, lng]).addTo(markersLayer);
             marker.bindPopup(`<b>${spot.name}</b><br>${spot.category}`);
             marker.on('click', () => displaySpotDetails(spot.id));
         });
-
+ // 3. Error State
     } catch (err) {
-        // 3. Error State
-        listEl.innerHTML = `<p class="error-state">Failed to load spots. Please retry.</p>`;
+        if (requestId === currentRequestId) {
+            if (countBadge) countBadge.textContent = "Error";
+            if (listEl) {
+                 listEl.innerHTML = `<p class="error-state">Failed to load spots. Please retry.</p>`;
+            }
+        }
     }
 }
 
 async function displaySpotDetails(spotId) {
     const modal = document.getElementById('spot-modal');
+    if (!modal) return;
+
     try {
         const res = await VantageAPI.getSpotDetails(spotId);
         const spot = res.data;
 
-        document.getElementById('modal-title').textContent = spot.name;
-        document.getElementById('modal-category').textContent = spot.category;
-        document.getElementById('modal-desc').textContent = spot.description;
-        document.getElementById('modal-img').src = spot.thumbnail;
-        document.getElementById('modal-img').alt = spot.name;
-        document.getElementById('modal-rating').textContent = `Rating: ⭐ ${spot.rating}`;
-        document.getElementById('modal-photos').textContent = `${spot.photoCount} Community Photos`;
+        const titleEl = document.getElementById('modal-title');
+        const catEl = document.getElementById('modal-category');
+        const descEl = document.getElementById('modal-description');
+        const imgEl = document.getElementById('modal-image');
+        const ratingEl = document.getElementById('modal-rating');
+        const photoEl = document.getElementById('modal-photo');
+
+        if (titleEl) titleEl.textContent = spot.name;
+        if (catEl) catEl.textContent = spot.category;
+        if (descEl) descEl.textContent = spot.description;
+        if (imgEl) {
+            imgEl.src = spot.thumbnail;
+            imgEl.alt = spot.name;
+        }
+        if (ratingEl) ratingEl.textContent = `Rating: ⭐ ${spot.rating}`;
+        if (photoEl) photoEl.textContent = `${spot.photo_count} Photos`;
 
         modal.classList.remove('hidden');
-        document.getElementById('close-modal-btn').focus();
+        const closeBtn = document.getElementById('close-modal');
+        if (closeBtn) closeBtn.focus();
     } catch (err) {
-        console.error(err);
+        console.error("Error loading spot details:", err);
     }
 }
 
 function initSpotModal() {
     const modal = document.getElementById('spot-modal');
-    document.getElementById('close-modal-btn').addEventListener('click', () => {
+    const closeBtn = document.getElementById('close-modal')
+    if (modal && closeBtn) {
+    closeBtn.addEventListener('click', () => {
         modal.classList.add('hidden');
     });
+  }
 }
 
 function initUploadModal() {
-    const uploadDialog = document.getElementById('upload-dialog');
-    const openBtn = document.getElementById('open-upload-btn');
-    const closeBtn = document.getElementById('close-upload-btn');
-    const cancelBtn = document.getElementById('cancel-upload-btn');
-    const dropZone = document.getElementById('drop-zone');
-    const fileInput = document.getElementById('modal-file-input');
-    const chosenName = document.getElementById('file-chosen-name');
     const form = document.getElementById('active-upload-form');
+    const fileInput = document.getElementById('modal-file-input');
+    const fileChosenPreview = document.getElementById('file-chosen-name');
 
-    const openModal = () => {
-        uploadDialog.classList.remove('hidden');
-        closeBtn.focus();
-    };
+    if (fileInput && fileChosenPreview) {
+        fileInput.addEventListener('change', () => {
+            if (fileInput.files.length > 0) {
+                fileChosenPreview.textContent = `Selected: ${fileInput.files[0].name}`;
+            }
+        });
+    }
 
-    const closeModal = () => {
-        uploadDialog.classList.add('hidden');
-        form.reset();
-        chosenName.textContent = "";
-        openBtn.focus();
-    };
-
-    openBtn.addEventListener('click', openModal);
-    closeBtn.addEventListener('click', closeModal);
-    cancelBtn.addEventListener('click', closeModal);
-
-    dropZone.addEventListener('click', () => fileInput.click());
-    fileInput.addEventListener('change', () => {
-        if (fileInput.files.length > 0) {
-            chosenName.textContent = `Selected: ${fileInput.files[0].name}`;
-        }
-    });
-
-    form.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const formData = new FormData(form);
-        try {
-            await VantageAPI.uploadPhoto(formData);
-            alert("Upload completed successfully!");
-            closeModal();
-        } catch (err) {
-            alert("Upload failed. Check gateway connection.");
-        }
-    });
+    if (form) {
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const formData = new FormData(form);
+            try {
+                await VantageAPI.uploadPhoto(formData);
+                alert("Photo uploaded successfully!");
+                form.reset();
+                if (fileChosenPreview) fileChosenPreview.textContent = "";
+            } catch (err) {
+                alert("Upload failed. Check gateway connection.");
+            }
+        });
+    }
 }
