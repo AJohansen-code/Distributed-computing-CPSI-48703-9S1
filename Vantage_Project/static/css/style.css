@@ -369,6 +369,7 @@ select:focus-visible,
     box-shadow: -4px 0 6px rgba(0, 0, 0, 0.6);
     z-index: 2000;
     overflow-y: auto;
+    color: #ffffff;
 }
 
 .spot-modal-content,
