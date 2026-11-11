@@ -97,7 +97,7 @@ export const VantageAPI = {
             return new Promise((resolve, reject) => {
                 setTimeout(() => {
                     try {
-                        const catClean = (category || "All").trim().toLowerCase();
+                        const catClean = String(category || "All").trim().toLowerCase();
 
                         let results = MOCK_SPOTS.filter((spot) => {
                             const spotLat = spot.latitude ?? spot.lat;
@@ -105,7 +105,6 @@ export const VantageAPI = {
                             const dist = getDistanceMeters(latitude, longitude, spotLat, spotLng);
                             const withinRadius = dist <= radiusMeters;
 
-                            // Match "All", or fuzzy match "Landmark"/"Landmarks"
                             const spotCat = spot.category.toLowerCase();
                             const matchesCategory =
                                 catClean === "all" ||

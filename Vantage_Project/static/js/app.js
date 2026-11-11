@@ -9,7 +9,7 @@ const MAP_CENTER = [34.7465, -92.2896];
 document.addEventListener('DOMContentLoaded', () => {
     initMap();
     initFilterControls();
-    initUploadModal();
+    initUploadCard();
     initSpotModal();
 
     const activeFilterBtn = document.querySelector('.filter-pill.active');
@@ -56,7 +56,7 @@ function initFilterControls() {
         radiusSelect.addEventListener('change', () => {
             const activeBtn = document.querySelector('.filter-pill.active');
             const category = activeBtn ? activeBtn.getAttribute('data-category') : 'All';
-            loadSpots(category, parseInt(radiusSelect.vaule, 10)); 
+            loadSpots(category, parseInt(radiusSelect.value, 10));
     });
   }
 }
@@ -75,7 +75,7 @@ async function loadSpots(category, radiusMeters) {
          <div class="skeleton-card" aria-hidden="true"></div>
     `;
     }
-    if (countBadge) countBadge.textContent = "Loading...";4
+    if (countBadge) countBadge.textContent = "Loading...";
 
     try {
         const response = await VantageAPI.getRankedSpots(
