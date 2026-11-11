@@ -78,7 +78,7 @@ async function loadSpots(category, radiusMeters) {
     if (countBadge) countBadge.textContent = "Loading...";
 
     try {
-        const response = await VantageAPI.getRankedSpots(
+        const response = await VantageAPI.getNearbySpots(
             MAP_CENTER[0],
             MAP_CENTER[1],
             radiusMeters,
